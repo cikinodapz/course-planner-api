@@ -43,7 +43,11 @@ func main() {
 	classService := service.NewClassService(classRepo)
 	classHandler := handler.NewClassHandler(classService)
 
-	router.SetupRoutes(app, authHandler, classHandler)
+	krsRepo := repository.NewKRSRepository(db)
+	krsService := service.NewKRSService(krsRepo)
+	krsHandler := handler.NewKRSHandler(krsService)
+
+	router.SetupRoutes(app, authHandler, classHandler, krsHandler)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatal(err)
