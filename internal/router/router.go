@@ -9,7 +9,7 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler) {
+func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler) {
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")
@@ -25,6 +25,15 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler 
 
 	admin := api.Group("/admin")
 	admin.Use(jwtMiddleware(), adminOnlyMiddleware())
+
+	krs := api.Group("/krs")
+	krs.Use(jwtMiddleware(), roleOnlyMiddleware("mahasiswa"))
+	krs.Get("/", krsHandler.GetTakenClasses)
+	krs.Get("/available-classes", krsHandler.ListAvailableClasses)
+	krsItems := krs.Group("/items")
+	krsItems.Post("/", krsHandler.TakeClass)
+	krsItems.Delete("/:classId", krsHandler.DropClass)
+	krsItems.Patch("/:classId/request-cancellation", krsHandler.RequestCancellation)
 
 	classes := admin.Group("/classes")
 	classes.Get("/", classHandler.ListClasses)
@@ -61,6 +70,27 @@ func adminOnlyMiddleware() fiber.Handler {
 		role, _ := claims["role"].(string)
 		if role != "admin" {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden"})
+		}
+
+		return c.Next()
+	}
+}
+
+func roleOnlyMiddleware(requiredRole string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		token, ok := c.Locals("user").(*jwt.Token)
+		if !ok || token == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+		}
+
+		role, _ := claims["role"].(string)
+		if role != requiredRole {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden - required role: " + requiredRole})
 		}
 
 		return c.Next()
