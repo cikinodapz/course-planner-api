@@ -10,7 +10,7 @@ import (
 type KRSItem struct {
 	ID              uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
 	KRSID           uuid.UUID  `gorm:"type:uuid" json:"krs_id"`
-	KRS             KRS        `gorm:"foreignKey:KRSID" json:"krs"`
+	KRS             KRS        `gorm:"foreignKey:KRSID" json:"-"`
 	ClassID         uuid.UUID  `gorm:"type:uuid" json:"class_id"`
 	Class           Class      `gorm:"foreignKey:ClassID" json:"class"`
 	Status          string     `gorm:"size:20" json:"status"`
