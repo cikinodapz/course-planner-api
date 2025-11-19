@@ -18,7 +18,7 @@ func LoadDatabase() *gorm.DB {
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
 		getEnv("DB_HOST", "localhost"),
 		getEnv("DB_USER", "postgres"),
-		getEnv("DB_PASSWORD", ""),
+		getEnv("DB_PASSWORD", "wedieyoung"),
 		getEnv("DB_NAME", "course_planner"),
 		getEnv("DB_PORT", "5432"),
 	)

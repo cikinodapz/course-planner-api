@@ -9,7 +9,7 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler) {
+func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler, userHandler *handler.UserHandler) {
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")
@@ -25,6 +25,9 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler 
 
 	admin := api.Group("/admin")
 	admin.Use(jwtMiddleware(), adminOnlyMiddleware())
+
+	user := api.Group("/users")
+    user.Get("/students", userHandler.ListStudents)
 
 	krs := api.Group("/krs")
 	krs.Use(jwtMiddleware(), roleOnlyMiddleware("mahasiswa"))

@@ -47,7 +47,10 @@ func main() {
 	krsService := service.NewKRSService(krsRepo)
 	krsHandler := handler.NewKRSHandler(krsService)
 
-	router.SetupRoutes(app, authHandler, classHandler, krsHandler)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	router.SetupRoutes(app, authHandler, classHandler, krsHandler, userHandler)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatal(err)

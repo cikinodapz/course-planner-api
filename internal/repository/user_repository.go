@@ -9,6 +9,7 @@ import (
 type UserRepository interface {
 	Create(user *models.User) error
 	FindByEmail(email string) (*models.User, error)
+	FindAllStudents() ([]models.User, error)
 }
 
 type userRepository struct {
@@ -31,3 +32,8 @@ func (r *userRepository) FindByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *userRepository) FindAllStudents() ([]models.User, error) {
+	var users []models.User
+	err := r.db.Where("role = ?", "mahasiswa").Find(&users).Error
+	return users, err
+}
