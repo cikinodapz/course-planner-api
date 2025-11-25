@@ -35,6 +35,12 @@ func main() {
 	// Middleware logger: log setiap request ke terminal (mirip morgan di Express)
 	app.Use(logger.New())
 
+	// Serve dokumentasi OpenAPI via Swagger UI pada /docs
+	app.Get("/docs", func(c *fiber.Ctx) error {
+		return c.SendFile("docs/index.html")
+	})
+	app.Static("/docs", "./docs")
+
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)

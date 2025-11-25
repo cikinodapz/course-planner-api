@@ -1,0 +1,519 @@
+openapi: 3.0.3
+info:
+  title: Course Planner API
+  version: 1.0.0
+  description: |
+    Dokumentasi otomatis untuk Course Planner API (Fiber + GORM + JWT).
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/auth/register:
+    post:
+      summary: Register user baru
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: registration successful
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/auth/login:
+    post:
+      summary: Login dan dapatkan JWT
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /api/me/:
+    get:
+      summary: Contoh endpoint terproteksi
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: authenticated endpoint
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/classes:
+    get:
+      summary: Daftar kelas (admin)
+      tags: [Classes]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar kelas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Class'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Buat kelas baru (admin)
+      tags: [Classes]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClassRequest'
+      responses:
+        '201':
+          description: Kelas dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /api/admin/classes/{id}:
+    get:
+      summary: Detail kelas (admin)
+      tags: [Classes]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detail kelas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Not found
+    patch:
+      summary: Update kelas (admin)
+      tags: [Classes]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClassRequest'
+      responses:
+        '200':
+          description: Kelas terupdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      summary: Hapus kelas (admin)
+      tags: [Classes]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Dihapus
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/krs:
+    get:
+      summary: Lihat KRS aktif (mahasiswa)
+      tags: [KRS]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: KRS ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/KRS'
+                  semester:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: KRS belum ada
+
+  /api/krs/available-classes:
+    get:
+      summary: Daftar kelas yang tersedia (mahasiswa)
+      tags: [KRS]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar kelas tersedia
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Class'
+                  semester:
+                    type: string
+
+  /api/krs/items:
+    post:
+      summary: Ambil kelas (mahasiswa)
+      tags: [KRS]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                class_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Kelas diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Matakuliah berhasil ditambahkan ke KRS
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Konflik (kelas sudah ada / sudah diverifikasi)
+
+  /api/krs/items/{classId}:
+    delete:
+      summary: Drop kelas (mahasiswa)
+      tags: [KRS]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Kelas dihapus dari KRS
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Tidak diizinkan (sudah diverifikasi)
+        '404':
+          description: Tidak ditemukan
+    patch:
+      summary: Ajukan pembatalan kelas (mahasiswa)
+      tags: [KRS]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Pengajuan pembatalan dikirim
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Tidak diizinkan
+        '409':
+          description: Konflik / permintaan tidak valid
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Monkey D. Luffy
+        email:
+          type: string
+          format: email
+          example: luffy@example.com
+        password:
+          type: string
+          format: password
+          example: strawhat123
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 4f2c0f4e-d0b4-4a67-9f2e-24ce01234567
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Class:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        course_id:
+          type: string
+          format: uuid
+        dosen_id:
+          type: string
+          format: uuid
+        nama_kelas:
+          type: string
+        hari:
+          type: string
+          example: Senin
+        jam_mulai:
+          type: string
+          example: "08:00"
+        jam_selesai:
+          type: string
+          example: "10:00"
+        room_id:
+          type: string
+          format: uuid
+        kuota:
+          type: integer
+        semester_penawaran:
+          type: string
+          example: ganjil
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateClassRequest:
+      type: object
+      required:
+        [course_id, dosen_id, nama_kelas, hari, jam_mulai, jam_selesai, room_id, kuota, semester_penawaran]
+      properties:
+        course_id:
+          type: string
+          format: uuid
+        dosen_id:
+          type: string
+          format: uuid
+        nama_kelas:
+          type: string
+        hari:
+          type: string
+        jam_mulai:
+          type: string
+          example: "08:00"
+        jam_selesai:
+          type: string
+          example: "10:00"
+        room_id:
+          type: string
+          format: uuid
+        kuota:
+          type: integer
+        semester_penawaran:
+          type: string
+          example: ganjil
+    UpdateClassRequest:
+      type: object
+      properties:
+        course_id:
+          type: string
+          format: uuid
+        dosen_id:
+          type: string
+          format: uuid
+        nama_kelas:
+          type: string
+        hari:
+          type: string
+        jam_mulai:
+          type: string
+          example: "08:00"
+        jam_selesai:
+          type: string
+          example: "10:00"
+        room_id:
+          type: string
+          format: uuid
+        kuota:
+          type: integer
+        semester_penawaran:
+          type: string
+          example: ganjil
+    KRS:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mahasiswa_id:
+          type: string
+          format: uuid
+        semester:
+          type: string
+        status:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/KRSItem'
+    KRSItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        class_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        class:
+          $ref: '#/components/schemas/Class'
