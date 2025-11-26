@@ -52,8 +52,10 @@ func main() {
 	krsRepo := repository.NewKRSRepository(db)
 	krsService := service.NewKRSService(krsRepo)
 	krsHandler := handler.NewKRSHandler(krsService)
+	dosenService := service.NewDosenPAService(krsRepo)
+	dosenHandler := handler.NewDosenHandler(dosenService)
 
-	router.SetupRoutes(app, authHandler, classHandler, krsHandler)
+	router.SetupRoutes(app, authHandler, classHandler, krsHandler, dosenHandler)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatal(err)
