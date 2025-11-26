@@ -170,3 +170,72 @@ func (r *KRSRepository) RequestCancellation(krsID uuid.UUID, classID uuid.UUID, 
 	
 	return nil
 }
+
+// ListMahasiswaByDosenPA mengembalikan seluruh mahasiswa bimbingan dosen PA tertentu
+func (r *KRSRepository) ListMahasiswaByDosenPA(dosenID uuid.UUID) ([]models.User, error) {
+	var students []models.User
+	err := r.DB.Where("role = ? AND dosen_pa_id = ?", "mahasiswa", dosenID).Find(&students).Error
+	return students, err
+}
+
+// UpdateKRSItemStatus memperbarui status item KRS (digunakan dosen PA saat verifikasi atau pembatalan)
+func (r *KRSRepository) UpdateKRSItemStatus(krsID uuid.UUID, classID uuid.UUID, newStatus string, extra map[string]interface{}) error {
+	updates := map[string]interface{}{
+		"status": newStatus,
+	}
+	for k, v := range extra {
+		updates[k] = v
+	}
+
+	result := r.DB.Model(&models.KRSItem{}).
+		Where("krs_id = ? AND class_id = ?", krsID, classID).
+		Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+// UpdateKRSStatus memperbarui status KRS dan verified_at jika diperlukan
+func (r *KRSRepository) UpdateKRSStatus(krsID uuid.UUID, newStatus string, verifiedAt *time.Time) error {
+	updates := map[string]interface{}{
+		"status": newStatus,
+	}
+	if verifiedAt != nil {
+		updates["verified_at"] = *verifiedAt
+	}
+
+	return r.DB.Model(&models.KRS{}).
+		Where("id = ?", krsID).
+		Updates(updates).Error
+}
+
+// UpdateKRSItemClass memindahkan item KRS ke class lain (dipakai dosen PA untuk edit)
+func (r *KRSRepository) UpdateKRSItemClass(krsID uuid.UUID, oldClassID uuid.UUID, newClassID uuid.UUID, newStatus string) error {
+	updates := map[string]interface{}{
+		"class_id": newClassID,
+	}
+	if newStatus != "" {
+		updates["status"] = newStatus
+	}
+
+	result := r.DB.Model(&models.KRSItem{}).
+		Where("krs_id = ? AND class_id = ?", krsID, oldClassID).
+		Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
