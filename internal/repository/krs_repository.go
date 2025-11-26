@@ -3,6 +3,7 @@ package repository
 import (
 	"course-planner-api/internal/models"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -169,4 +170,81 @@ func (r *KRSRepository) RequestCancellation(krsID uuid.UUID, classID uuid.UUID, 
 	}
 	
 	return nil
+}
+
+// Get list mahasiswa
+func (r *KRSRepository) GetStudentClasses(MahasiswaID string) ([]models.Class, error) {
+    var classes []models.Class
+
+    err := r.DB.
+        Table("krs_items").
+        Select("classes.*").
+        Joins("JOIN classes ON classes.id = krs_items.class_id").
+        Joins("JOIN krs ON krs.id = krs_items.krs_id").
+        Where("krs.mahasiswa_id = ?", MahasiswaID).
+        Scan(&classes).Error
+
+    return classes, err
+}
+
+// Get mahasiswa KRS
+func (r *KRSRepository) GetLatestKRSByMahasiswaID(mahasiswaID uuid.UUID) (*models.KRS, error) {
+    var krs models.KRS
+    err := r.DB.
+        Where("mahasiswa_id = ?", mahasiswaID).
+        Order("created_at desc").
+        Preload("Mahasiswa").
+        Preload("Items").
+        Preload("Items.Class").
+        First(&krs).Error
+
+    if err != nil {
+        return nil, err
+    }
+    return &krs, nil
+}
+
+// Delete class by dosen pa
+func (r *KRSRepository) DropClassByDosen(mahasiswaId string, classId string) error {
+    result := r.DB.
+        Table("krs_items").
+        Joins("JOIN krs ON krs.id = krs_items.krs_id").
+        Where("krs.mahasiswa_id = ?", mahasiswaId).
+        Where("krs_items.class_id = ?", classId).
+        Delete(nil)
+
+    if result.Error != nil {
+        return result.Error
+    }
+
+    if result.RowsAffected == 0 {
+        return fmt.Errorf("Data KRS tidak ditemukan atau mahasiswa tidak mengambil kelas ini")
+    }
+
+    return nil
+}
+
+// PATCH Verify KRS Item oleh dosen PA //
+func (r *KRSRepository) GetKRSItemWithRelations(itemId uuid.UUID) (*models.KRSItem, error) {
+	var item models.KRSItem
+	err := r.DB.
+		Preload("KRS").
+		Preload("KRS.Mahasiswa").
+		First(&item, "id = ?", itemId).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
+}
+
+
+func (r *KRSRepository) UpdateKRSItem(item *models.KRSItem) error {
+	return r.DB.Save(item).Error
+}
+
+
+func (r *KRSRepository) UpdateKRS(krs *models.KRS) error {
+	return r.DB.Save(krs).Error
 }

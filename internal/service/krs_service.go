@@ -179,3 +179,58 @@ func (s *KRSService) RequestClassCancellation(mahasiswaID uuid.UUID, classID uui
 
 	return s.Repo.RequestCancellation(krs.ID, classID, KRS_ITEM_STATUS_ACTIVE, KRS_ITEM_STATUS_CANCELLATION_REQUEST)
 }
+
+// GET mahasiswa KRS
+func (s *KRSService) GetStudentClasses(MahasiswaID string) ([]models.Class, error) {
+    return s.Repo.GetStudentClasses(MahasiswaID)
+}
+//DELETE class by dosen pa
+func (s *KRSService) DropClassByDosen(mahasiswaId string, classId string) error {
+    return s.Repo.DropClassByDosen(mahasiswaId, classId)
+}
+
+
+// PATCH Verify KRS Item oleh dosen PA //
+func (s *KRSService) VerifyKRSItem(
+	itemId uuid.UUID,
+	mahasiswaId uuid.UUID,
+	dosenId uuid.UUID,
+	status string,
+	catatan string,
+) error {
+
+	// 1. Ambil item + relasi
+	item, err := s.Repo.GetKRSItemWithRelations(itemId)
+	if err != nil {
+		return errors.New("krs item not found")
+	}
+
+	// 2. Validasi item milik mahasiswa
+	if item.KRS.MahasiswaID != mahasiswaId {
+		return errors.New("item does not belong to this student")
+	}
+
+	// 3. Validasi dosen PA
+	if item.KRS.Mahasiswa.DosenPAID == nil ||
+		item.KRS.Mahasiswa.DosenPAID.String() != dosenId.String() {
+		return errors.New("forbidden: you are not this student's advisor")
+	}
+
+	// 4. Update item
+	item.Status = status
+	if err := s.Repo.UpdateKRSItem(item); err != nil {
+		return errors.New("failed to update item")
+	}
+
+	// 5. Jika approved -> update KRS
+	if status == "approved" {
+		now := time.Now()
+		item.KRS.Status = "approved"
+		item.KRS.VerifiedAt = &now
+		item.KRS.CatatanDosen = catatan
+		return s.Repo.UpdateKRS(&item.KRS)
+	}
+
+	// rejected -> hanya item yang update
+	return nil
+}

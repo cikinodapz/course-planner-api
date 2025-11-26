@@ -30,13 +30,23 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler 
     user.Get("/students", userHandler.ListStudents)
 
 	krs := api.Group("/krs")
-	krs.Use(jwtMiddleware(), roleOnlyMiddleware("mahasiswa"))
-	krs.Get("/", krsHandler.GetTakenClasses)
-	krs.Get("/available-classes", krsHandler.ListAvailableClasses)
-	krsItems := krs.Group("/items")
+// ROUTE untuk mahasiswa, ubah dikit yaa untuk mastiin mana mahasiswa mana yang dosennya, soalnya nabrak2
+	krsMahasiswa := krs.Group("/mahasiswa")
+	krsMahasiswa.Use(jwtMiddleware(), roleOnlyMiddleware("mahasiswa"))
+	krsMahasiswa.Get("/", krsHandler.GetTakenClasses)
+	krsMahasiswa.Get("/available-classes", krsHandler.ListAvailableClasses)
+	krsItems := krsMahasiswa.Group("/items")
 	krsItems.Post("/", krsHandler.TakeClass)
 	krsItems.Delete("/:classId", krsHandler.DropClass)
-	krsItems.Patch("/:classId/request-cancellation", krsHandler.RequestCancellation)
+	krsItems.Patch("/:classId/request-cancellation", krsHandler.RequestCancellation) // Lihat kelas mahasiswa tapi masih orang lain selain dosen pa masi bisa liat keknya ni
+
+	dosenKRS := api.Group("/krs/dosen")
+	dosenKRS.Use(jwtMiddleware(), roleOnlyMiddleware("dosen"))
+	dosenKRS.Delete("/mahasiswa/:mahasiswaId/items/:classId", krsHandler.DropClassByDosen)
+	dosenKRS.Get("/mahasiswa/:id/classes", krsHandler.GetClassesByStudent)
+	dosenKRS.Patch("/mahasiswa/:mahasiswaId/items/:itemId/verify", krsHandler.VerifyKRSItemByDosen)
+
+
 
 	classes := admin.Group("/classes")
 	classes.Get("/", classHandler.ListClasses)

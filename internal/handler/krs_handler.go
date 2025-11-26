@@ -191,3 +191,87 @@ func (h *KRSHandler) RequestCancellation(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "Pengajuan pembatalan matakuliah berhasil. Menunggu persetujuan Dosen PA."})
 }
+
+// Lihat kelas mahasiswa tapi masih orang lain selain dosen pa masi bisa liat keknya ni
+func (h *KRSHandler) GetClassesByStudent(c *fiber.Ctx) error {
+    MahasiswaID := c.Params("id")
+
+    classes, err := h.Service.GetStudentClasses(MahasiswaID)
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Berhasil mengambil daftar mata kuliah mahasiswa",
+        "data":    classes,
+    })
+}
+
+func (h *KRSHandler) DropClassByDosen(c *fiber.Ctx) error {
+    mahasiswaId := c.Params("mahasiswaId")
+    classId := c.Params("classId")
+
+    if mahasiswaId == "" || classId == "" {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "error": "mahasiswaId dan classId wajib diisi",
+        })
+    }
+
+    err := h.Service.DropClassByDosen(mahasiswaId, classId)
+    if err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Dosen berhasil menghapus mata kuliah mahasiswa",
+    })
+}
+
+// PATCH Verify KRS Item oleh dosen PA //
+func (h *KRSHandler) VerifyKRSItemByDosen(c *fiber.Ctx) error {
+    mahasiswaIdParam := c.Params("mahasiswaId")
+    itemIdParam := c.Params("itemId")
+
+    mahasiswaId, err := uuid.Parse(mahasiswaIdParam)
+    if err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": "invalid mahasiswa id"})
+    }
+
+    itemId, err := uuid.Parse(itemIdParam)
+    if err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": "invalid item id"})
+    }
+
+    var req struct {
+        Status       string `json:"status"`
+        CatatanDosen string `json:"catatan_dosen"`
+    }
+
+    if err := c.BodyParser(&req); err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": "invalid body"})
+    }
+
+    if req.Status != "approved" && req.Status != "rejected" {
+        return c.Status(400).JSON(fiber.Map{"error": "status must be approved or rejected"})
+    }
+
+    // Ambil user id dosen dari JWT
+    user := c.Locals("user").(*jwt.Token)
+    claims := user.Claims.(jwt.MapClaims)
+    dosenId, _ := uuid.Parse(claims["user_id"].(string))
+
+    // Panggil service
+    err = h.Service.VerifyKRSItem(
+        itemId,
+        mahasiswaId,
+        dosenId,
+        req.Status,
+        req.CatatanDosen,
+    )
+    if err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+    }
+
+    return c.JSON(fiber.Map{"message": "verification updated"})
+}
+
