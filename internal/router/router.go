@@ -9,7 +9,7 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler) {
+func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler, dosenHandler *handler.DosenHandler) {
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")
@@ -34,6 +34,16 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler 
 	krsItems.Post("/", krsHandler.TakeClass)
 	krsItems.Delete("/:classId", krsHandler.DropClass)
 	krsItems.Patch("/:classId/request-cancellation", krsHandler.RequestCancellation)
+
+	dosen := api.Group("/dosen")
+	dosen.Use(jwtMiddleware(), roleOnlyMiddleware("dosen"))
+	dosen.Get("/students", dosenHandler.ListStudents)
+	dosen.Get("/students/:mahasiswaId/krs", dosenHandler.GetMahasiswaKRS)
+	dosenItems := dosen.Group("/students/:mahasiswaId/krs/items")
+	dosenItems.Delete("/:classId", dosenHandler.RemoveMahasiswaClass)
+	dosenItems.Patch("/:classId", dosenHandler.UpdateMahasiswaClass)
+	dosenItems.Patch("/:classId/approve", dosenHandler.ApproveMahasiswaClass)
+	dosenItems.Patch("/:classId/reject", dosenHandler.RejectMahasiswaClass)
 
 	classes := admin.Group("/classes")
 	classes.Get("/", classHandler.ListClasses)
