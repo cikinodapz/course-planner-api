@@ -17,6 +17,8 @@ const (
 	KRS_ITEM_STATUS_ACTIVE               = "ACTIVE"
 	KRS_ITEM_STATUS_CANCELLATION_REQUEST = "CANCELLATION_REQUEST"
 	KRS_ITEM_STATUS_CANCELLED            = "CANCELLED"
+	KRS_ITEM_STATUS_APPROVED             = "APPROVED"
+	KRS_ITEM_STATUS_REJECTED             = "REJECTED"
 )
 
 type KRSService struct {
@@ -42,7 +44,7 @@ func GetCurrentSemester() string {
 func CheckScheduleConflict(selected []models.Class, existing []models.KRSItem) error {
 	for _, sel := range selected {
 		for _, item := range existing {
-			if item.Status == KRS_ITEM_STATUS_CANCELLED {
+			if item.Status == KRS_ITEM_STATUS_CANCELLED || item.Status == KRS_ITEM_STATUS_REJECTED {
 				continue
 			}
 			existClass := item.Class
@@ -68,7 +70,7 @@ func (s *KRSService) ListAvailableClasses(mahasiswaID uuid.UUID) ([]models.Class
 
 	var excludedClassIDs []uuid.UUID
 	for _, item := range krs.Items {
-		if item.Status != KRS_ITEM_STATUS_CANCELLED {
+		if item.Status != KRS_ITEM_STATUS_CANCELLED && item.Status != KRS_ITEM_STATUS_REJECTED {
 			excludedClassIDs = append(excludedClassIDs, item.ClassID)
 		}
 	}
@@ -108,7 +110,7 @@ func (s *KRSService) TakeClass(mahasiswaID uuid.UUID, classIDs []uuid.UUID) erro
 
 	for _, c := range classes {
 		for _, item := range krs.Items {
-			if item.Status == KRS_ITEM_STATUS_CANCELLED {
+			if item.Status == KRS_ITEM_STATUS_CANCELLED || item.Status == KRS_ITEM_STATUS_REJECTED {
 				continue
 			}
 
@@ -168,6 +170,9 @@ func (s *KRSService) RequestClassCancellation(mahasiswaID uuid.UUID, classID uui
 			}
 			if item.Status == KRS_ITEM_STATUS_CANCELLED {
 				return errors.New("Matakuliah ini sudah dibatalkan sebelumnya.")
+			}
+			if item.Status == KRS_ITEM_STATUS_REJECTED {
+				return errors.New("Matakuliah ini telah ditolak oleh Dosen PA.")
 			}
 			break
 		}
