@@ -318,6 +318,193 @@ paths:
         '409':
           description: Konflik / permintaan tidak valid
 
+  /api/dosen/students:
+    get:
+      summary: Daftar mahasiswa bimbingan (dosen PA)
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar mahasiswa bimbingan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/dosen/students/{mahasiswaId}/krs:
+    get:
+      summary: Lihat KRS mahasiswa bimbingan (semester berjalan)
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mahasiswaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: KRS mahasiswa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/KRS'
+                  semester:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: KRS tidak ditemukan
+
+  /api/dosen/students/{mahasiswaId}/krs/items/{classId}:
+    delete:
+      summary: Hapus matakuliah dari KRS mahasiswa
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mahasiswaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Matakuliah dihapus
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Item tidak ditemukan
+    patch:
+      summary: Pindahkan matakuliah ke kelas lain
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mahasiswaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMahasiswaClassRequest'
+      responses:
+        '200':
+          description: Kelas diperbarui
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Item tidak ditemukan
+
+  /api/dosen/students/{mahasiswaId}/krs/items/{classId}/approve:
+    patch:
+      summary: Setujui matakuliah di KRS mahasiswa
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mahasiswaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Disetujui
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Item tidak ditemukan
+
+  /api/dosen/students/{mahasiswaId}/krs/items/{classId}/reject:
+    patch:
+      summary: Tolak matakuliah di KRS mahasiswa
+      description: Hanya untuk role `dosen`.
+      tags: [Dosen PA]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mahasiswaId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: classId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ditolak
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Item tidak ditemukan
+
 components:
   securitySchemes:
     bearerAuth:
@@ -487,6 +674,13 @@ components:
         semester_penawaran:
           type: string
           example: ganjil
+    UpdateMahasiswaClassRequest:
+      type: object
+      required: [new_class_id]
+      properties:
+        new_class_id:
+          type: string
+          format: uuid
     KRS:
       type: object
       properties:
