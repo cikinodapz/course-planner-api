@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 )
 
@@ -21,41 +20,7 @@ func NewKRSHandler(service *service.KRSService) *KRSHandler {
 
 // getMahasiswaID extracts the MahasiswaID (User ID) from JWT claims
 func getMahasiswaID(c *fiber.Ctx) (uuid.UUID, error) {
-	userToken, ok := c.Locals("user").(*jwt.Token)
-	if !ok || userToken == nil {
-		return uuid.Nil, errors.New("Token tidak ditemukan")
-	}
-
-	claims, ok := userToken.Claims.(jwt.MapClaims)
-	if !ok {
-		return uuid.Nil, errors.New("Claims token tidak valid")
-	}
-
-	idValue, ok := claims["user_id"]
-	if !ok {
-		return uuid.Nil, errors.New("ID pengguna ('user_id') tidak ditemukan di token")
-	}
-
-	var idStr string
-	switch v := idValue.(type) {
-	case string:
-		idStr = v
-	case uuid.UUID:
-		idStr = v.String()
-	default:
-		if s, ok := idValue.(string); ok {
-			idStr = s
-		} else {
-			return uuid.Nil, errors.New("Tipe ID pengguna tidak valid")
-		}
-	}
-
-	userID, err := uuid.Parse(idStr)
-	if err != nil {
-		return uuid.Nil, errors.New("ID pengguna tidak valid")
-	}
-
-	return userID, nil
+	return getUserIDFromContext(c)
 }
 
 // ListAvailableClasses (Req. 1)
