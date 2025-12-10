@@ -9,7 +9,16 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler *handler.ClassHandler, krsHandler *handler.KRSHandler, dosenHandler *handler.DosenHandler) {
+func SetupRoutes(
+	app *fiber.App,
+	authHandler *handler.AuthHandler,
+	classHandler *handler.ClassHandler,
+	krsHandler *handler.KRSHandler,
+	dosenHandler *handler.DosenHandler,
+	courseHandler *handler.CourseHandler,
+	roomHandler *handler.RoomHandler,
+	dosenMgmtHandler *handler.DosenManagementHandler,
+) {
 	api := app.Group("/api")
 
 	auth := api.Group("/auth")
@@ -45,12 +54,35 @@ func SetupRoutes(app *fiber.App, authHandler *handler.AuthHandler, classHandler 
 	dosenItems.Patch("/:classId/approve", dosenHandler.ApproveMahasiswaClass)
 	dosenItems.Patch("/:classId/reject", dosenHandler.RejectMahasiswaClass)
 
+	// Admin - Classes
 	classes := admin.Group("/classes")
 	classes.Get("/", classHandler.ListClasses)
 	classes.Post("/", classHandler.CreateClass)
 	classes.Get("/:id", classHandler.GetClass)
 	classes.Patch("/:id", classHandler.UpdateClass)
 	classes.Delete("/:id", classHandler.DeleteClass)
+
+	// Admin - Courses
+	courses := admin.Group("/courses")
+	courses.Get("/", courseHandler.ListCourses)
+	courses.Post("/", courseHandler.CreateCourse)
+	courses.Get("/:id", courseHandler.GetCourse)
+	courses.Patch("/:id", courseHandler.UpdateCourse)
+	courses.Delete("/:id", courseHandler.DeleteCourse)
+
+	// Admin - Rooms
+	rooms := admin.Group("/rooms")
+	rooms.Get("/", roomHandler.ListRooms)
+	rooms.Post("/", roomHandler.CreateRoom)
+	rooms.Get("/:id", roomHandler.GetRoom)
+	rooms.Patch("/:id", roomHandler.UpdateRoom)
+	rooms.Delete("/:id", roomHandler.DeleteRoom)
+
+	// Admin - Dosen Management
+	dosenMgmt := admin.Group("/dosen")
+	dosenMgmt.Get("/", dosenMgmtHandler.ListDosen)
+	dosenMgmt.Get("/:id", dosenMgmtHandler.GetDosen)
+	dosenMgmt.Patch("/:id", dosenMgmtHandler.UpdateDosen)
 }
 
 func jwtMiddleware() fiber.Handler {
