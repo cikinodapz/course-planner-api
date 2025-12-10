@@ -3,7 +3,58 @@ info:
   title: Course Planner API
   version: 1.0.0
   description: |
-    Dokumentasi otomatis untuk Course Planner API (Fiber + GORM + JWT).
+    **Backend REST API untuk Sistem Perencanaan Perkuliahan**
+    
+    API ini menyediakan layanan lengkap untuk pengelolaan data akademik termasuk manajemen mata kuliah, kelas, ruangan, dosen, dan Kartu Rencana Studi (KRS) mahasiswa.
+    
+    ---
+    
+    ## ⚡ Tech Stack
+    
+    - **Framework:** Go Fiber v2
+    - **Database:** PostgreSQL + GORM
+    - **Authentication:** JWT (JSON Web Token)
+    - **Documentation:** OpenAPI 3.0
+    
+    ---
+    
+    ## 🔐 Authentication
+    
+    API ini menggunakan **Bearer Token (JWT)** untuk autentikasi. Setelah login, sertakan token di header:
+    
+    ```
+    Authorization: Bearer <your_token>
+    ```
+    
+    ---
+    
+    ## 📋 Available Modules
+    
+    | Module | Description |
+    |--------|-------------|
+    | 🔑 **Auth** | Register & Login user |
+    | 📚 **Courses** | CRUD mata kuliah |
+    | 🏫 **Classes** | Manajemen kelas perkuliahan |
+    | 🚪 **Rooms** | Manajemen ruangan |
+    | 👨‍🏫 **Dosen** | Data dosen pengajar |
+    | 📝 **KRS** | Kartu Rencana Studi mahasiswa |
+    
+    ---
+    
+    ## 👥 Development Team
+    
+    | Developer | GitHub |
+    |-----------|--------|
+    | **Daffa Agustian Saadi** | [@cikinodapz](https://github.com/cikinodapz) |
+    | **Nadia Deari Hanifah** | [@nadia1624](https://github.com/nadia1624) |
+    | **Tegar Ananda** | [@Tegarananda13](https://github.com/Tegarananda13) |
+    
+    ---
+    
+    📧 **Contact:** [daffaagustiansaadi1803@gmail.com](mailto:daffaagustiansaadi1803@gmail.com)
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
 servers:
   - url: http://localhost:8080
 paths:
@@ -507,6 +558,376 @@ paths:
         '404':
           description: Item tidak ditemukan
 
+  /api/admin/courses:
+    get:
+      summary: Daftar semua mata kuliah (admin)
+      tags: [Admin - Courses]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar mata kuliah
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Buat mata kuliah baru (admin)
+      tags: [Admin - Courses]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCourseRequest'
+      responses:
+        '201':
+          description: Mata kuliah dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Course created successfully
+                  course:
+                    $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/courses/{id}:
+    get:
+      summary: Detail mata kuliah (admin)
+      tags: [Admin - Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detail mata kuliah
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Course tidak ditemukan
+    patch:
+      summary: Update mata kuliah (admin)
+      tags: [Admin - Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCourseRequest'
+      responses:
+        '200':
+          description: Mata kuliah terupdate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Course updated successfully
+                  course:
+                    $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Course tidak ditemukan
+    delete:
+      summary: Hapus mata kuliah (admin)
+      tags: [Admin - Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Dihapus
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Course tidak ditemukan
+
+  /api/admin/rooms:
+    get:
+      summary: Daftar semua ruangan (admin)
+      tags: [Admin - Rooms]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar ruangan
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Buat ruangan baru (admin)
+      tags: [Admin - Rooms]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Ruangan dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Room created successfully
+                  room:
+                    $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/rooms/{id}:
+    get:
+      summary: Detail ruangan (admin)
+      tags: [Admin - Rooms]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detail ruangan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Room tidak ditemukan
+    patch:
+      summary: Update ruangan (admin)
+      tags: [Admin - Rooms]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomRequest'
+      responses:
+        '200':
+          description: Ruangan terupdate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Room updated successfully
+                  room:
+                    $ref: '#/components/schemas/Room'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Room tidak ditemukan
+    delete:
+      summary: Hapus ruangan (admin)
+      tags: [Admin - Rooms]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Dihapus
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Room tidak ditemukan
+
+  /api/admin/dosen:
+    get:
+      summary: Daftar semua dosen (admin)
+      tags: [Admin - Dosen]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar dosen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dosen'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/dosen/{id}:
+    get:
+      summary: Detail dosen (admin)
+      tags: [Admin - Dosen]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detail dosen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dosen'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Dosen tidak ditemukan
+    patch:
+      summary: Update dosen (admin)
+      tags: [Admin - Dosen]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDosenRequest'
+      responses:
+        '200':
+          description: Dosen terupdate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Dosen updated successfully
+                  dosen:
+                    $ref: '#/components/schemas/Dosen'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Dosen tidak ditemukan
+
 components:
   securitySchemes:
     bearerAuth:
@@ -577,12 +998,125 @@ components:
         email:
           type: string
           format: email
+        role:
+          type: string
+          example: mahasiswa
+        nim:
+          type: string
+        nidn:
+          type: string
+        dosen_pa_id:
+          type: string
+          format: uuid
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        kode:
+          type: string
+          example: IF101
+        nama:
+          type: string
+          example: Algoritma dan Pemrograman
+        sks:
+          type: integer
+          example: 3
+    CreateCourseRequest:
+      type: object
+      required: [kode, nama, sks]
+      properties:
+        kode:
+          type: string
+          example: IF101
+        nama:
+          type: string
+          example: Algoritma dan Pemrograman
+        sks:
+          type: integer
+          example: 3
+    UpdateCourseRequest:
+      type: object
+      properties:
+        kode:
+          type: string
+          example: IF102
+        nama:
+          type: string
+          example: Struktur Data
+        sks:
+          type: integer
+          example: 4
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        nama:
+          type: string
+          example: Lab Komputer A
+    CreateRoomRequest:
+      type: object
+      required: [nama]
+      properties:
+        nama:
+          type: string
+          example: Lab Komputer A
+    UpdateRoomRequest:
+      type: object
+      properties:
+        nama:
+          type: string
+          example: Lab Komputer B
+
+    Dosen:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440002
+        name:
+          type: string
+          example: Dr. John Doe
+        email:
+          type: string
+          format: email
+          example: johndoe@university.ac.id
+        role:
+          type: string
+          example: dosen
+        nidn:
+          type: string
+          example: "0012345678"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    UpdateDosenRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Dr. Jane Doe
+        nidn:
+          type: string
+          example: "0087654321"
+
     Class:
       type: object
       properties:
@@ -683,6 +1217,7 @@ components:
         new_class_id:
           type: string
           format: uuid
+
     KRS:
       type: object
       properties:
