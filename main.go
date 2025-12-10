@@ -41,21 +41,48 @@ func main() {
 	})
 	app.Static("/docs", "./docs")
 
+	// Auth
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo)
 	authHandler := handler.NewAuthHandler(authService)
 
+	// Class
 	classRepo := repository.NewClassRepository(db)
 	classService := service.NewClassService(classRepo)
 	classHandler := handler.NewClassHandler(classService)
 
+	// KRS
 	krsRepo := repository.NewKRSRepository(db)
 	krsService := service.NewKRSService(krsRepo)
 	krsHandler := handler.NewKRSHandler(krsService)
 	dosenService := service.NewDosenPAService(krsRepo)
 	dosenHandler := handler.NewDosenHandler(dosenService)
 
-	router.SetupRoutes(app, authHandler, classHandler, krsHandler, dosenHandler)
+	// Course (Admin)
+	courseRepo := repository.NewCourseRepository(db)
+	courseService := service.NewCourseService(courseRepo)
+	courseHandler := handler.NewCourseHandler(courseService)
+
+	// Room (Admin)
+	roomRepo := repository.NewRoomRepository(db)
+	roomService := service.NewRoomService(roomRepo)
+	roomHandler := handler.NewRoomHandler(roomService)
+
+	// Dosen Management (Admin)
+	dosenRepo := repository.NewDosenRepository(db)
+	dosenMgmtService := service.NewDosenManagementService(dosenRepo)
+	dosenMgmtHandler := handler.NewDosenManagementHandler(dosenMgmtService)
+
+	router.SetupRoutes(
+		app,
+		authHandler,
+		classHandler,
+		krsHandler,
+		dosenHandler,
+		courseHandler,
+		roomHandler,
+		dosenMgmtHandler,
+	)
 
 	if err := app.Listen(":8080"); err != nil {
 		log.Fatal(err)
