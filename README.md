@@ -448,6 +448,270 @@ Authorization: Bearer <ADMIN_TOKEN>
 
 ---
 
+## Manajemen Mata Kuliah / Courses (Admin Only)
+
+Base path:
+
+```text
+/api/admin/courses
+```
+
+### 1. GET `/api/admin/courses`
+
+List semua mata kuliah.
+
+**Header:**
+
+```http
+Authorization: Bearer <ADMIN_TOKEN>
+```
+
+**Response (200 OK):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "kode": "IF101",
+    "nama": "Algoritma dan Pemrograman",
+    "sks": 3
+  }
+]
+```
+
+### 2. POST `/api/admin/courses`
+
+Membuat mata kuliah baru.
+
+**Header:**
+
+```http
+Authorization: Bearer <ADMIN_TOKEN>
+Content-Type: application/json
+```
+
+**Body contoh:**
+
+```json
+{
+  "kode": "IF101",
+  "nama": "Algoritma dan Pemrograman",
+  "sks": 3
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "message": "Course created successfully",
+  "course": {
+    "id": "...",
+    "kode": "IF101",
+    "nama": "Algoritma dan Pemrograman",
+    "sks": 3
+  }
+}
+```
+
+### 3. GET `/api/admin/courses/:id`
+
+Detail mata kuliah berdasarkan ID.
+
+**Response (200 OK):** sama seperti satu item di list.
+
+Jika tidak ditemukan: `404 Not Found`.
+
+### 4. PATCH `/api/admin/courses/:id`
+
+Update mata kuliah (partial update).
+
+**Body contoh:**
+
+```json
+{
+  "kode": "IF102",
+  "nama": "Struktur Data",
+  "sks": 4
+}
+```
+
+Semua field optional.
+
+### 5. DELETE `/api/admin/courses/:id`
+
+Hapus mata kuliah.
+
+**Response:**
+
+- `204 No Content` jika berhasil.
+
+---
+
+## Manajemen Ruangan / Rooms (Admin Only)
+
+Base path:
+
+```text
+/api/admin/rooms
+```
+
+### 1. GET `/api/admin/rooms`
+
+List semua ruangan.
+
+**Header:**
+
+```http
+Authorization: Bearer <ADMIN_TOKEN>
+```
+
+**Response (200 OK):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "nama": "Lab Komputer A"
+  }
+]
+```
+
+### 2. POST `/api/admin/rooms`
+
+Membuat ruangan baru.
+
+**Header:**
+
+```http
+Authorization: Bearer <ADMIN_TOKEN>
+Content-Type: application/json
+```
+
+**Body contoh:**
+
+```json
+{
+  "nama": "Lab Komputer A"
+}
+```
+
+**Response (201 Created):**
+
+```json
+{
+  "message": "Room created successfully",
+  "room": {
+    "id": "...",
+    "nama": "Lab Komputer A"
+  }
+}
+```
+
+### 3. GET `/api/admin/rooms/:id`
+
+Detail ruangan berdasarkan ID.
+
+**Response (200 OK):** sama seperti satu item di list.
+
+Jika tidak ditemukan: `404 Not Found`.
+
+### 4. PATCH `/api/admin/rooms/:id`
+
+Update ruangan (partial update).
+
+**Body contoh:**
+
+```json
+{
+  "nama": "Lab Komputer B"
+}
+```
+
+### 5. DELETE `/api/admin/rooms/:id`
+
+Hapus ruangan.
+
+**Response:**
+
+- `204 No Content` jika berhasil.
+
+---
+
+## Manajemen Dosen (Admin Only)
+
+Base path:
+
+```text
+/api/admin/dosen
+```
+
+### 1. GET `/api/admin/dosen`
+
+List semua dosen.
+
+**Header:**
+
+```http
+Authorization: Bearer <ADMIN_TOKEN>
+```
+
+**Response (200 OK):**
+
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "name": "Dr. John Doe",
+    "email": "johndoe@university.ac.id",
+    "role": "dosen",
+    "nidn": "0012345678",
+    "created_at": "...",
+    "updated_at": "..."
+  }
+]
+```
+
+### 2. GET `/api/admin/dosen/:id`
+
+Detail dosen berdasarkan ID.
+
+**Response (200 OK):** sama seperti satu item di list.
+
+Jika tidak ditemukan: `404 Not Found`.
+
+### 3. PATCH `/api/admin/dosen/:id`
+
+Update data dosen (partial update).
+
+**Body contoh:**
+
+```json
+{
+  "name": "Dr. Jane Doe",
+  "nidn": "0087654321"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "message": "Dosen updated successfully",
+  "dosen": {
+    "id": "...",
+    "name": "Dr. Jane Doe",
+    "email": "...",
+    "role": "dosen",
+    "nidn": "0087654321",
+    "created_at": "...",
+    "updated_at": "..."
+  }
+}
+```
+
+---
+
 ## Model Data (Ringkas)
 
 ### Users (`internal/models/user.go`)
@@ -510,14 +774,15 @@ Struktur sudah disiapkan di model (`krs.go`, `krs_item.go`) untuk fitur KRS:
 
 Beberapa pengembangan yang bisa dilakukan selanjutnya:
 
-- Endpoint CRUD untuk `courses`, `rooms`, `users` (admin).
+- ✅ ~~Endpoint CRUD untuk `courses`, `rooms` (admin).~~ (Sudah diimplementasikan)
+- ✅ ~~Endpoint manajemen dosen (admin).~~ (Sudah diimplementasikan)
+- ✅ ~~Dokumentasi API dengan Swagger / OpenAPI.~~ (Tersedia di `/docs`)
 - Endpoint KRS:
   - Mahasiswa buat KRS.
   - Tambah/hapus class ke KRS.
   - Dosen PA verifikasi / tolak KRS.
 - Pagination dan filtering untuk list classes (by hari, dosen, course, semester).
 - Validasi tambahan (misal: dosen hanya boleh ajar di jam tertentu, max SKS per mahasiswa, dll).
-- Dokumentasi API dengan Swagger / OpenAPI.
 
 ---
 
