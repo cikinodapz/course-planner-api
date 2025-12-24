@@ -97,8 +97,7 @@ func (h *KRSHandler) DropClass(c *fiber.Ctx) error {
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menghapus matakuliah", "details": err.Error()})
 	}
-
-	return c.JSON(fiber.Map{"message": "Matakuliah berhasil dihapus dari KRS"})
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 // GetTakenClasses (Req. 4)
@@ -154,5 +153,5 @@ func (h *KRSHandler) RequestCancellation(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengajukan pembatalan", "details": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "Pengajuan pembatalan matakuliah berhasil. Menunggu persetujuan Dosen PA."})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Pengajuan pembatalan matakuliah berhasil. Menunggu persetujuan Dosen PA."})
 }

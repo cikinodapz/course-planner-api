@@ -339,7 +339,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        '204':
           description: Kelas dihapus dari KRS
         '401':
           $ref: '#/components/responses/Unauthorized'
@@ -362,7 +362,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        '201':
           description: Pengajuan pembatalan dikirim
         '401':
           $ref: '#/components/responses/Unauthorized'
