@@ -41,14 +41,6 @@ func (h *CourseHandler) ListCourses(c *fiber.Ctx) error {
 	return c.JSON(courses)
 }
 
-// CreateCourse godoc
-// @Summary Create a new course
-// @Tags Admin - Courses
-// @Security BearerAuth
-// @Accept json
-// @Param body body CreateCourseRequest true "Course data"
-// @Success 201 {object} models.Course
-// @Router /api/admin/courses [post]
 func (h *CourseHandler) CreateCourse(c *fiber.Ctx) error {
 	var req CreateCourseRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -70,13 +62,6 @@ func (h *CourseHandler) CreateCourse(c *fiber.Ctx) error {
 	})
 }
 
-// GetCourse godoc
-// @Summary Get course by ID
-// @Tags Admin - Courses
-// @Security BearerAuth
-// @Param id path string true "Course ID"
-// @Success 200 {object} models.Course
-// @Router /api/admin/courses/{id} [get]
 func (h *CourseHandler) GetCourse(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -91,15 +76,6 @@ func (h *CourseHandler) GetCourse(c *fiber.Ctx) error {
 	return c.JSON(course)
 }
 
-// UpdateCourse godoc
-// @Summary Update course
-// @Tags Admin - Courses
-// @Security BearerAuth
-// @Accept json
-// @Param id path string true "Course ID"
-// @Param body body UpdateCourseRequest true "Course data"
-// @Success 200 {object} models.Course
-// @Router /api/admin/courses/{id} [patch]
 func (h *CourseHandler) UpdateCourse(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -122,13 +98,6 @@ func (h *CourseHandler) UpdateCourse(c *fiber.Ctx) error {
 	})
 }
 
-// DeleteCourse godoc
-// @Summary Delete course
-// @Tags Admin - Courses
-// @Security BearerAuth
-// @Param id path string true "Course ID"
-// @Success 204 "No Content"
-// @Router /api/admin/courses/{id} [delete]
 func (h *CourseHandler) DeleteCourse(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {

@@ -770,6 +770,109 @@ Struktur sudah disiapkan di model (`krs.go`, `krs_item.go`) untuk fitur KRS:
 
 ---
 
+## Referensi Buku / Books (External API - UAS Feature)
+
+> **[UAS]** Fitur ini mengkonsumsi **Google Books API** (Public API) dengan autentikasi **API Key**.
+
+### Konfigurasi
+
+Tambahkan API Key di file `.env`:
+
+```env
+GOOGLE_BOOKS_API_KEY=your_google_books_api_key_here
+```
+
+> Dapatkan API Key gratis di [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create Credentials → API Key → Enable "Books API"
+
+### API yang Dikonsumsi
+
+| Provider | Base URL | Auth Type |
+|----------|----------|-----------|
+| Google Books API | `https://www.googleapis.com/books/v1/volumes` | API Key |
+
+Base path:
+
+```text
+/api/books
+```
+
+### 1. GET `/api/books?query=...`
+
+Cari buku berdasarkan kata kunci.
+
+**Header:**
+
+```http
+Authorization: Bearer <TOKEN>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | ✅ | Kata kunci pencarian (contoh: "algoritma", "pemrograman") |
+| `maxResults` | int | ❌ | Jumlah maksimal hasil (default: 10, max: 40) |
+
+**Response (200 OK):**
+
+```json
+{
+  "total_items": 150,
+  "books": [
+    {
+      "id": "zyTCAlFPjgYC",
+      "title": "Introduction to Algorithms",
+      "authors": ["Thomas H. Cormen", "Charles E. Leiserson"],
+      "publisher": "MIT Press",
+      "published_date": "2009",
+      "description": "Buku panduan lengkap tentang algoritma...",
+      "thumbnail": "https://books.google.com/books/content?id=...",
+      "info_link": "https://books.google.com/books?id=...",
+      "isbn_10": "0262033844",
+      "isbn_13": "9780262033848"
+    }
+  ]
+}
+```
+
+### 2. GET `/api/books/:id`
+
+Detail buku berdasarkan Google Books Volume ID.
+
+**Header:**
+
+```http
+Authorization: Bearer <TOKEN>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "id": "zyTCAlFPjgYC",
+  "title": "Introduction to Algorithms",
+  "subtitle": "Third Edition",
+  "authors": ["Thomas H. Cormen", "Charles E. Leiserson"],
+  "publisher": "MIT Press",
+  "published_date": "2009-07-31",
+  "description": "This book covers a broad range of algorithms in depth...",
+  "page_count": 1312,
+  "categories": ["Computers", "Programming"],
+  "average_rating": 4.5,
+  "ratings_count": 127,
+  "language": "en",
+  "thumbnail": "https://books.google.com/books/content?id=...",
+  "preview_link": "https://books.google.com/books?id=...",
+  "info_link": "https://books.google.com/books?id=...",
+  "isbn_10": "0262033844",
+  "isbn_13": "9780262033848"
+}
+```
+
+Jika tidak ditemukan: `404 Not Found`.
+
+---
+
 ## Pengembangan Lanjutan (Ide)
 
 Beberapa pengembangan yang bisa dilakukan selanjutnya:
@@ -777,6 +880,7 @@ Beberapa pengembangan yang bisa dilakukan selanjutnya:
 - ✅ ~~Endpoint CRUD untuk `courses`, `rooms` (admin).~~ (Sudah diimplementasikan)
 - ✅ ~~Endpoint manajemen dosen (admin).~~ (Sudah diimplementasikan)
 - ✅ ~~Dokumentasi API dengan Swagger / OpenAPI.~~ (Tersedia di `/docs`)
+- ✅ ~~Integrasi External API (UAS).~~ (Google Books API - Sudah diimplementasikan)
 - Endpoint KRS:
   - Mahasiswa buat KRS.
   - Tambah/hapus class ke KRS.

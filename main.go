@@ -73,6 +73,10 @@ func main() {
 	dosenMgmtService := service.NewDosenManagementService(dosenRepo)
 	dosenMgmtHandler := handler.NewDosenManagementHandler(dosenMgmtService)
 
+	// Books - External API (Google Books) - UAS Feature
+	bookService := service.NewBookService()
+	bookHandler := handler.NewBookHandler(bookService)
+
 	router.SetupRoutes(
 		app,
 		authHandler,
@@ -82,6 +86,7 @@ func main() {
 		courseHandler,
 		roomHandler,
 		dosenMgmtHandler,
+		bookHandler,
 	)
 
 	if err := app.Listen(":8080"); err != nil {
