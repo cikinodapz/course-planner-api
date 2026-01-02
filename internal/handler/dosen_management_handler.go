@@ -20,12 +20,6 @@ type UpdateDosenRequest struct {
 	NIDN *string `json:"nidn,omitempty"`
 }
 
-// ListDosen godoc
-// @Summary List all dosen
-// @Tags Admin - Dosen
-// @Security BearerAuth
-// @Success 200 {array} models.User
-// @Router /api/admin/dosen [get]
 func (h *DosenManagementHandler) ListDosen(c *fiber.Ctx) error {
 	dosens, err := h.service.GetAllDosen()
 	if err != nil {
@@ -34,13 +28,6 @@ func (h *DosenManagementHandler) ListDosen(c *fiber.Ctx) error {
 	return c.JSON(dosens)
 }
 
-// GetDosen godoc
-// @Summary Get dosen by ID
-// @Tags Admin - Dosen
-// @Security BearerAuth
-// @Param id path string true "Dosen ID"
-// @Success 200 {object} models.User
-// @Router /api/admin/dosen/{id} [get]
 func (h *DosenManagementHandler) GetDosen(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
@@ -55,15 +42,6 @@ func (h *DosenManagementHandler) GetDosen(c *fiber.Ctx) error {
 	return c.JSON(dosen)
 }
 
-// UpdateDosen godoc
-// @Summary Update dosen
-// @Tags Admin - Dosen
-// @Security BearerAuth
-// @Accept json
-// @Param id path string true "Dosen ID"
-// @Param body body UpdateDosenRequest true "Dosen data"
-// @Success 200 {object} models.User
-// @Router /api/admin/dosen/{id} [patch]
 func (h *DosenManagementHandler) UpdateDosen(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {

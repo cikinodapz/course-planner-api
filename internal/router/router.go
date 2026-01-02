@@ -18,6 +18,7 @@ func SetupRoutes(
 	courseHandler *handler.CourseHandler,
 	roomHandler *handler.RoomHandler,
 	dosenMgmtHandler *handler.DosenManagementHandler,
+	bookHandler *handler.BookHandler,
 ) {
 	api := app.Group("/api")
 
@@ -83,6 +84,12 @@ func SetupRoutes(
 	dosenMgmt.Get("/", dosenMgmtHandler.ListDosen)
 	dosenMgmt.Get("/:id", dosenMgmtHandler.GetDosen)
 	dosenMgmt.Patch("/:id", dosenMgmtHandler.UpdateDosen)
+
+	// Books - External API (Google Books) - UAS Feature
+	books := api.Group("/books")
+	books.Use(jwtMiddleware())
+	books.Get("/", bookHandler.SearchBooks)
+	books.Get("/:id", bookHandler.GetBookDetail)
 }
 
 func jwtMiddleware() fiber.Handler {

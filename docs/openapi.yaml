@@ -38,6 +38,7 @@ info:
     | 🚪 **Rooms** | Manajemen ruangan |
     | 👨‍🏫 **Dosen** | Data dosen pengajar |
     | 📝 **KRS** | Kartu Rencana Studi mahasiswa |
+    | 📚 **Books** | Referensi buku (Google Books API) |
     
     ---
     
@@ -928,6 +929,86 @@ paths:
         '404':
           description: Dosen tidak ditemukan
 
+  /api/books:
+    get:
+      summary: Cari buku dari Google Books API
+      description: |
+        **[UAS Feature]** Endpoint ini mengkonsumsi Google Books API (External Public API).
+        
+        - **Autentikasi External API**: API Key (GOOGLE_BOOKS_API_KEY)
+        - **Provider**: Google Books API (https://www.googleapis.com/books/v1/volumes)
+        
+        Gunakan endpoint ini untuk mencari buku referensi berdasarkan kata kunci.
+      tags: [Books (External API)]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: query
+          required: true
+          description: Kata kunci pencarian (contoh algoritma, pemrograman)
+          schema:
+            type: string
+            example: algoritma
+        - in: query
+          name: maxResults
+          required: false
+          description: Jumlah maksimal hasil pencarian (default 10, max 40)
+          schema:
+            type: integer
+            default: 10
+            maximum: 40
+      responses:
+        '200':
+          description: Daftar buku ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookSearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Error dari Google Books API
+
+  /api/books/{id}:
+    get:
+      summary: Detail buku dari Google Books API
+      description: |
+        **[UAS Feature]** Endpoint ini mengkonsumsi Google Books API (External Public API).
+        
+        - **Autentikasi External API**: API Key (GOOGLE_BOOKS_API_KEY)
+        - **Provider**: Google Books API (https://www.googleapis.com/books/v1/volumes)
+        
+        Gunakan endpoint ini untuk mendapatkan detail lengkap buku berdasarkan Volume ID dari Google Books.
+      tags: [Books (External API)]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Google Books Volume ID
+          schema:
+            type: string
+            example: zyTCAlFPjgYC
+      responses:
+        '200':
+          description: Detail buku
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Buku tidak ditemukan
+        '500':
+          description: Error dari Google Books API
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1248,3 +1329,119 @@ components:
           type: string
         class:
           $ref: '#/components/schemas/Class'
+
+    # Books Schemas (UAS - External API)
+    BookSearchResponse:
+      type: object
+      description: Response dari pencarian buku Google Books API
+      properties:
+        total_items:
+          type: integer
+          description: Total buku yang ditemukan
+          example: 150
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookBrief'
+
+    BookBrief:
+      type: object
+      description: Ringkasan informasi buku
+      properties:
+        id:
+          type: string
+          description: Google Books Volume ID
+          example: zyTCAlFPjgYC
+        title:
+          type: string
+          example: Introduction to Algorithms
+        authors:
+          type: array
+          items:
+            type: string
+          example: ["Thomas H. Cormen", "Charles E. Leiserson"]
+        publisher:
+          type: string
+          example: MIT Press
+        published_date:
+          type: string
+          example: "2009"
+        description:
+          type: string
+          example: "Buku panduan lengkap tentang algoritma..."
+        thumbnail:
+          type: string
+          format: uri
+          example: https://books.google.com/books/content?id=xxx
+        info_link:
+          type: string
+          format: uri
+          example: https://books.google.com/books?id=xxx
+        isbn_10:
+          type: string
+          example: "0262033844"
+        isbn_13:
+          type: string
+          example: "9780262033848"
+
+    BookDetail:
+      type: object
+      description: Detail lengkap informasi buku
+      properties:
+        id:
+          type: string
+          description: Google Books Volume ID
+          example: zyTCAlFPjgYC
+        title:
+          type: string
+          example: Introduction to Algorithms
+        subtitle:
+          type: string
+          example: Third Edition
+        authors:
+          type: array
+          items:
+            type: string
+          example: ["Thomas H. Cormen", "Charles E. Leiserson"]
+        publisher:
+          type: string
+          example: MIT Press
+        published_date:
+          type: string
+          example: "2009-07-31"
+        description:
+          type: string
+          example: "This book covers a broad range of algorithms in depth..."
+        page_count:
+          type: integer
+          example: 1312
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["Computers", "Programming"]
+        average_rating:
+          type: number
+          format: float
+          example: 4.5
+        ratings_count:
+          type: integer
+          example: 127
+        language:
+          type: string
+          example: en
+        thumbnail:
+          type: string
+          format: uri
+        preview_link:
+          type: string
+          format: uri
+        info_link:
+          type: string
+          format: uri
+        isbn_10:
+          type: string
+          example: "0262033844"
+        isbn_13:
+          type: string
+          example: "9780262033848"
